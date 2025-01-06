@@ -1,17 +1,8 @@
 import time
 from win10toast import ToastNotifier
 import datetime
-
-def getTimeInput(): 
-    hour = int(input("Enter hours of interval: ")) 
-    minutes = int(input("Enter minutes of interval: ")) 
-    seconds = int(input("Enter seconds of interval: ")) 
-    time_interval = seconds + (minutes * 60) + (hour * 3600) 
-    return time_interval
-
-def getBreakReason():
-    reason = input("Enter the reason for this break (e.g., 'Water Break', 'Stretch Break'): ")
-    return reason if reason else "Break"  # Default to "Break" if no input
+import tkinter as tk
+from tkinter import messagebox
 
 def log(reason):
     now = datetime.datetime.now()
@@ -24,11 +15,51 @@ def notify(reason):
     log(reason)
 
 def start_timer(time_interval, reason):
-    while True:
-        time.sleep(time_interval)
-        notify(reason)
+    def timer():
+        while True:
+            time.sleep(time_interval)
+            notify(reason)
 
-if __name__ == "__main__":
-    time_interval = getTimeInput()
-    reason = getBreakReason()
-    start_timer(time_interval, reason)
+    import threading
+    threading.Thread(target=timer, daemon=True).start()
+
+def start_app():
+    try:
+        hour = int(hour_var.get())
+        minute = int(minute_var.get())
+        second = int(second_var.get())
+        reason = reason_var.get()
+        if not reason:
+            reason = "Break"
+
+        time_interval = second + (minute * 60) + (hour * 3600)
+        if time_interval <= 0:
+            messagebox.showerror("Invalid Input", "Time interval must be greater than zero.")
+        else:
+            messagebox.showinfo("Timer Started", f"{reason} timer started!")
+            start_timer(time_interval, reason)
+    except ValueError:
+        messagebox.showerror("Invalid Input", "Please enter valid numbers for the time interval.")
+
+root = tk.Tk()
+root.title("Break Reminder")
+
+tk.Label(root, text="Enter Hours:").grid(row=0, column=0, padx=10, pady=5)
+hour_var = tk.StringVar()
+tk.Entry(root, textvariable=hour_var).grid(row=0, column=1, padx=10, pady=5)
+
+tk.Label(root, text="Enter Minutes:").grid(row=1, column=0, padx=10, pady=5)
+minute_var = tk.StringVar()
+tk.Entry(root, textvariable=minute_var).grid(row=1, column=1, padx=10, pady=5)
+
+tk.Label(root, text="Enter Seconds:").grid(row=2, column=0, padx=10, pady=5)
+second_var = tk.StringVar()
+tk.Entry(root, textvariable=second_var).grid(row=2, column=1, padx=10, pady=5)
+
+tk.Label(root, text="Reason for Break:").grid(row=3, column=0, padx=10, pady=5)
+reason_var = tk.StringVar()
+tk.Entry(root, textvariable=reason_var).grid(row=3, column=1, padx=10, pady=5)
+
+tk.Button(root, text="Start Timer", command=start_app).grid(row=4, column=0, columnspan=2, pady=10)
+
+root.mainloop()
